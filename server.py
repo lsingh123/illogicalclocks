@@ -49,7 +49,7 @@ class VirtualMachine:
             return self.testing[self.test_index-1]
 
     def send_message(self, target_id):
-        print(self.time)
+        print(f"sending time {self.time}")
         if not self.testing:
             requests.get(f"http://localhost:500{target_id}/{self.time}")
         self.time += 1
@@ -77,7 +77,7 @@ class VirtualMachine:
 
             message = self.pop_message()
             if message:
-                print(message)
+                print(f"got message {message}")
 
             # idk what the diff is between 1 and 2 the specs are vague
             elif action == 1 or action == 2:
