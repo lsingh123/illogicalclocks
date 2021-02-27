@@ -27,7 +27,7 @@ class VirtualMachine:
         self.test_index = 0 # index into the testing array
         self.message_queue = queue.Queue()
         self.time = 0 # logical clock time
-        self.rate = randrange(1, 6) * 10 # clock tick rate, self.rate events will occur in a single real second
+        self.rate = randrange(1, 7) #* 10 # clock tick rate, self.rate events will occur in a single real second
 
         # ID's of the other virtual machines this machine will talk to
         self.others = [0, 1, 2]
