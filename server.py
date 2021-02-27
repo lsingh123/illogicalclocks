@@ -9,6 +9,7 @@ from time import sleep
 import argparse
 import os
 import datetime
+import csv
 
 app = Flask(__name__)
 machine = None
@@ -72,25 +73,31 @@ class VirtualMachine:
     def run_machine(self):
         self.run_server()
         filename = f"{self.id}.txt"
-
         try:
             os.remove(filename)
         except OSError:
             pass
-        
+
+        with open(filename, "w+") as f:
+            writer = csv.writer(f, delimiter = ",")
+            writer.writerow(["EVENT", "ID", "TARGET1", "TARGET2", "LOGICAL_TIME", "QUEUE_LENGTH", "TIME"])
+
         while True:
                 
-            # sleep for 60/rate seconds 
+            # sleep for 60/r
+            /rate seconds 
             sleep(60/self.rate)
 
             action = self.get_action()
 
             event = None
+            target1, target2 = -1, -1
             message = self.pop_message()
             if message:
                 time_received = int(message)
                 self.time = max(self.time, time_received) + 1
-                event = "Received message."
+                target1 = 
+                event = "received"
 
             else:
 
@@ -98,20 +105,24 @@ class VirtualMachine:
                 if action in {1, 2}:
                     recipient = self.others[action - 1]
                     self.send_message(recipient)
-                    event = f"Sent message to {recipient}."
+                    event = "send"
+                    target1 = recipient
 
                 elif action == 3:
                     recipient1 = self.others[0]
                     recipient2 = self.others[1]
                     self.send_message(recipient1)
                     self.send_message(recipient2)
-                    event = f"Sent message to {recipient1} & {recipient2}."
+                    event = "multisend"
+                    target1 = recipient1
+                    target2 = recipient2
                 else:
-                    event = "Internal."
+                    event = "internal"
 
             q_length = self.message_queue.qsize()
             with open(filename, "a+") as f:
-                f.write(f"EVENT: {event} ID: {self.id}. TIME: {self.time}. QUEUE LENGTH: {q_length}. TIME: {datetime.datetime.now().time()}\n")
+                writer = csv.writer(f, delimiter=",")
+                writer.writerow([event, self.id, target1, target2, self.time, q_length, datetime.datetime.now().time()])
                 
 
 if __name__ == '__main__':
