@@ -85,7 +85,6 @@ class VirtualMachine:
         while True:
                 
             # sleep for 60/r
-            /rate seconds 
             sleep(60/self.rate)
 
             action = self.get_action()
@@ -96,7 +95,6 @@ class VirtualMachine:
             if message:
                 time_received = int(message)
                 self.time = max(self.time, time_received) + 1
-                target1 = 
                 event = "received"
 
             else:

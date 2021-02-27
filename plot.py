@@ -2,11 +2,6 @@ import matplotlib.pyplot as plt
 import csv
 
 
-events = [[], [], []]
-events[0] = [1, 2, 3, 4]
-events[1] = [3, 5, 6]
-events[2] = [0, 2, 4, 6]
-
 class Message:
 
     def __init__(self, receiver, sender, time_sent, time_received):
@@ -44,7 +39,6 @@ def load_data():
     # process receives
     for i in range(3):
         with open(f"{i}.txt", "r") as f:
-            print(f"processing file {i}")
             reader = csv.reader(f, delimiter=",")
             count = 0
             for row in reader:
@@ -72,34 +66,40 @@ def draw_arrow(x, y, x_end, y_end):
           head_length=.2, head_width=.2,
           length_includes_head=True)
 
-messages, latest = load_data()
-latest += 2
-# set up the figure
-fig = plt.figure()
-ax = fig.add_subplot(111)
-ax.set_xlim(0,latest)
-ax.set_ylim(0,10)
+def make_figure():
+    messages, latest = load_data()
+    latest += 2
 
-# draw lines
-xmin = 0
-xmax = latest
-y = 0
-height = 1
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    ax.set_xlim(0,latest)
+    ax.set_ylim(0,10)
 
-for i in range(3):
-    y = y + 2.5
-    plt.text(xmin, y+0.3, f"Process {i}")
-    plt.hlines(y , xmin, xmax, label=f"Process {i}")
-    plt.vlines(xmin, y - height / 2., y + height / 2.)
-    plt.vlines(xmax, y - height / 2., y + height / 2.)
+    # draw lines
+    xmin = 0
+    xmax = latest
+    y = 0
+    height = 1
 
-for message in messages:
-    plt.plot(int(message.send_time), (int(message.sender)+1)*2.5, 'ro', ms=5, mfc='r')
-    plt.plot(int(message.receive_time), (int(message.receiver) + 1) *2.5, 'bo', ms=5, mfc='b')
-    dx = int(message.receive_time) - int(message.send_time)
-    dy = (int(message.receiver) + 1) *2.5 - (int(message.sender)+1)*2.5
-    plt.arrow(int(message.send_time), (int(message.sender)+1)*2.5, dx, dy, head_length=0.2, head_width = 0.2, length_includes_head=True)
+    # add process lines
+    for i in range(3):
+        y = y + 2.5
+        plt.text(xmin, y+0.3, f"Process {i}")
+        plt.hlines(y , xmin, xmax, label=f"Process {i}")
+        plt.vlines(xmin, y - height / 2., y + height / 2.)
+        plt.vlines(xmax, y - height / 2., y + height / 2.)
 
-plt.xlabel("Logical Time")
+    # add events
+    for message in messages:
+        plt.plot(int(message.send_time), (int(message.sender)+1)*2.5, 'ro', ms=5, mfc='r')
+        plt.plot(int(message.receive_time), (int(message.receiver) + 1) *2.5, 'bo', ms=5, mfc='b')
+        dx = int(message.receive_time) - int(message.send_time)
+        dy = (int(message.receiver) + 1) *2.5 - (int(message.sender)+1)*2.5
+        plt.arrow(int(message.send_time), (int(message.sender)+1)*2.5, dx, dy, head_length=0.2, head_width = 0.2, length_includes_head=True)
 
-plt.show()
+    plt.xlabel("Logical Time")
+
+    plt.show()
+
+if __name__ == '__main__':
+    make_figure()
