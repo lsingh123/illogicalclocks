@@ -7,6 +7,8 @@ import requests
 from random import randrange
 from time import sleep
 import argparse
+import os
+import datetime
 
 app = Flask(__name__)
 machine = None
@@ -25,7 +27,7 @@ class VirtualMachine:
         self.test_index = 0 # index into the testing array
         self.message_queue = queue.Queue()
         self.time = 0 # logical clock time
-        self.rate = randrange(1, 6) # clock tick rate, self.rate events will occur in a single real second
+        self.rate = randrange(1, 6) * 10 # clock tick rate, self.rate events will occur in a single real second
 
         # ID's of the other virtual machines this machine will talk to
         self.others = [0, 1, 2]
@@ -39,23 +41,20 @@ class VirtualMachine:
  
     # return a message from the message queue, or None if queue is empty
     def pop_message(self):
-        if self.message_queue.empty():
-            return None
-
-        # might make more sense to put all the logical clock stuff in the logging/file writing functions
-        self.time += 1
-        if not self.testing:
-            return self.message_queue.get()
-        else:
+        if self.testing:
             self.test_index += 1
             return self.testing[self.test_index-1]
+        else:
+            try:
+                return self.message_queue.get_nowait()
+            except queue.Empty:
+                return None
+        
 
     # send a message to the target_id containing this machine's logical clock time
     def send_message(self, target_id):
-        print(f"sending time {self.time}")
         if not self.testing:
             requests.get(f"http://localhost:500{target_id}/{self.time}")
-        self.time += 1
 
     # start the server in a separate thread to handle multiple connections
     def run_server(self):
@@ -72,28 +71,47 @@ class VirtualMachine:
 
     def run_machine(self):
         self.run_server()
+        filename = f"{self.id}.txt"
+
+        try:
+            os.remove(filename)
+        except OSError:
+            pass
         
         while True:
-            print(f"hi {self.id} {self.time}")
+                
             # sleep for 60/rate seconds 
             sleep(60/self.rate)
 
             action = self.get_action()
 
+            event = None
             message = self.pop_message()
             if message:
-                print(f"got message {message}")
-
-            # idk what the diff is between 1 and 2 the specs are vague
-            elif action == 1 or action == 2:
-                self.send_message(self.others[0])
-
-            elif action == 3:
-                self.send_message(self.others[0])
-                self.send_message(self.others[1])
+                time_received = int(message)
+                self.time = max(self.time, time_received) + 1
+                event = "Received message."
 
             else:
+
                 self.time += 1
+                if action in {1, 2}:
+                    recipient = self.others[action - 1]
+                    self.send_message(recipient)
+                    event = f"Sent message to {recipient}."
+
+                elif action == 3:
+                    recipient1 = self.others[0]
+                    recipient2 = self.others[1]
+                    self.send_message(recipient1)
+                    self.send_message(recipient2)
+                    event = f"Sent message to {recipient1} & {recipient2}."
+                else:
+                    event = "Internal."
+
+            q_length = self.message_queue.qsize()
+            with open(filename, "a+") as f:
+                f.write(f"EVENT: {event} ID: {self.id}. TIME: {self.time}. QUEUE LENGTH: {q_length}. TIME: {datetime.datetime.now().time()}\n")
                 
 
 if __name__ == '__main__':
