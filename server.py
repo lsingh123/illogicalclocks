@@ -10,6 +10,7 @@ import argparse
 import os
 import datetime
 import csv
+import time
 
 app = Flask(__name__)
 machine = None
@@ -73,6 +74,7 @@ class VirtualMachine:
     def run_machine(self):
         self.run_server()
         filename = f"{self.id}.txt"
+        start_time = time.time()
         try:
             os.remove(filename)
         except OSError:
@@ -120,7 +122,7 @@ class VirtualMachine:
             q_length = self.message_queue.qsize()
             with open(filename, "a+") as f:
                 writer = csv.writer(f, delimiter=",")
-                writer.writerow([event, self.id, target1, target2, self.time, q_length, datetime.datetime.now().time()])
+                writer.writerow([event, self.id, target1, target2, self.time, q_length, int(time.time()-start_time)])
                 
 
 if __name__ == '__main__':
