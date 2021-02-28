@@ -129,9 +129,9 @@ class VirtualMachine:
                     event = "send"
                     target1 = recipient
 
-                # elif action == 3:    # control group
+                elif action == 3:    # control group
                 # elif action > 2 and action < 6:    # trials 6-7
-                elif action > 2 and action < 8:    # trials 8-9
+                # elif action > 2 and action < 8:    # trials 8-9
                     recipient1 = self.others[0]
                     recipient2 = self.others[1]
                     self.send_message(recipient1)
