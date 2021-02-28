@@ -15,7 +15,8 @@ The first observation is that faster clocks, as in clocks with a higher tick rat
 
 Notice that VM 1, represented by the green dots, drifts the least from system time, whereas VM 2, represented by blue dots drifts the most. VM 1's tick rate is four times that of VM 2, hence the difference in drift.
 
-Trial 5's drift diagram also demonstrates this fact. The green machine has a tick rate of 6 ticks/second, and thus drifts far less than the blue and red machines, which have tick rates of 1 tick/second. 
+Trial 5's drift diagram demonstrates this fact even more dramatically. The green machine has a tick rate of 6 ticks/second, and thus drifts far less than the blue and red 
+machines, which have tick rates of 1 tick/second. 
 
 ![image](https://github.com/lsingh123/illogicalclocks/blob/main/plots/Trial%205/drift.png)
 
