@@ -3,7 +3,7 @@
 ## Experimental Setup
 
 We ran each experiment with 3 virtual machines for 4 minutes at a time. Trial 1-5 ran the machines for 4 minutes. Trials 6-7 
-reduced the probability of an internal event to 1/2, and Trials 8-9 reduced this probability further to 3/10. Tick rates were generated
+reduced the probability of an internal event to 1/2, and Trials 8-9 reduced this probability further to 3/10. Tick rates were 
 initialized randomly. This report will include plots we found especially interesting. To see all data, go to `plots/` 
 The code that generated these plots is in `code/` `code/spacetime_plot.py` generated the spacetime diagrams and `code/time_plot` generated the clock drift graphs.
 
