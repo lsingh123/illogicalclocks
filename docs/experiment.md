@@ -52,10 +52,9 @@ This implies that if components in a distributed system must be synchronized wit
 as close as possible to the "real" clock tick rate. Note that for the purposes of our experiment, a higher tick rate also meant more 
 data points to plot and analyze, which produced some cleaner looking lines on the scatterplot. If we ran our trials for far longer, maybe 30 minutes, then the noise should fade away and all three VM's, regardless of tick rate, should achieve similarly clean lines.
 
-### Observation 2: Receivers are Receivers
+### Observation 2: Receivers are Receivers/ Message Queue Length
 
-
-In Trial 9, VM sends a bunch and the other guys get clogged and can't send anymore 
+In Trial 9, VM sends a bunch and the other guys get clogged and can't send anymore -> mention connection between clock speed and length of the message queue
 
 ### Observation 3: Higher probability of message send
 
@@ -68,6 +67,10 @@ Trial 1 space time diagram for logicaltime vs systemtime vs Trial 2
 ### Observation 5: Same Clock tick rate == Same Drift
 
 The boring trial 2. 
+
+### Observation 6: Slower clocks have higher jumps in logical clock value
+
+Trial 4 space time diagrams 
 
 
 
