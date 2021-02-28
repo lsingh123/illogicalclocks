@@ -1,1 +1,1 @@
-![image](../plots/Trial\ 1/drift.png)
+![image](https://github.com/lsingh123/illogicalclocks/blob/main/plots/Trial%201/drift.png)
