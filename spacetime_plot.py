@@ -22,14 +22,18 @@ class Message:
     @param: int time_received
         time in either logical ticks or real seconds of the message receipt.
         defaults to -1.
+
+    @param: bool internal
+        True if event is internal, False otherwise
         
     '''
 
-    def __init__(self, receiver, sender, time_sent, time_received=-1):
+    def __init__(self, receiver, sender, time_sent=-1, time_received=-1, internal=False):
         self.sender = int(sender)
         self.receiver = int(receiver)
         self.send_time = int(time_sent)
         self.receive_time = int(time_received)
+        self.internal = internal
 
 '''
 load_data: int time_type -> Message list messages, int latest
@@ -63,6 +67,8 @@ def load_data(time_type):
                 if (row[headers["EVENT"]] == "multisend"):
                     messages.append(Message(row[headers["TARGET1"]], row[headers["ID"]], row[headers[time_type]]))         
                     messages.append(Message(row[headers["TARGET2"]], row[headers["ID"]], row[headers[time_type]]))
+                if (row[headers["EVENT"]] == "internal"):
+                    messages.append(Message(-1, row[headers["ID"]], time_sent = row[headers[time_type]], internal=True))
 
     # we want to process sends in order of receipt 
     # FIFO queue message processing means that a receipt will correspond to the earliest unclaimed message
@@ -87,6 +93,7 @@ def load_data(time_type):
                             message = m
                             break
                     message.receive_time = int(row[headers[time_type]])
+
 
     latest = max([max(messages, key=lambda m: m.receive_time).receive_time, max(messages, key=lambda m: m.send_time).send_time])
 
@@ -130,16 +137,21 @@ def make_figure(time_type, time_label):
 
     # add sends, receives, and connection arrows
     for message in messages:
-        plt.plot(message.send_time, (message.sender+1)*2.5, 'ro', ms=5, mfc='r')
 
-        # no arrow or receipt for messages that were never received
-        if message.receive_time > -1:
-            plt.plot(message.receive_time, (message.receiver + 1) *2.5, 'bo', ms=5, mfc='b')
+        # internal messages are handled separately
+        if message.internal: 
+            plt.plot(message.send_time,(message.sender+1)*2.5, 'go', ms=5, mfc='g', label="internal")
+        else:
+            plt.plot(message.send_time, (message.sender+1)*2.5, 'ro', ms=5, mfc='r')
 
-            # draw the arrow
-            dx = message.receive_time - message.send_time
-            dy = (message.receiver+ 1) *2.5 - (message.sender+1)*2.5
-            plt.arrow(message.send_time, (message.sender+1)*2.5, dx, dy, head_length=(xmax-xmin)*0.01, head_width = 0.2, length_includes_head=True)
+            # no arrow or receipt for messages that were never received
+            if message.receive_time > -1:
+                plt.plot(message.receive_time, (message.receiver + 1) *2.5, 'bo', ms=5, mfc='b')
+
+                # draw the arrow
+                dx = message.receive_time - message.send_time
+                dy = (message.receiver+ 1) *2.5 - (message.sender+1)*2.5
+                plt.arrow(message.send_time, (message.sender+1)*2.5, dx, dy, head_length=(xmax-xmin)*0.01, head_width = 0.2, length_includes_head=True)
 
     plt.xlabel(time_label)
     plt.title("Space Time Diagram for Message Sends and Receives")
