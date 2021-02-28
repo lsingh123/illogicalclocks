@@ -14,7 +14,7 @@ machine is a different color, and the scattplot shows logical time as a function
 logical time = system time. Because our machines are really slow (only a few ticks per second), they all have far lower logical time than the hypothetical
 zero drift clock. 
 
-* As an example, here's the Clock Drift graph for Trial 4:
+As an example, here's the Clock Drift graph for Trial 4:
 
 ![image](https://github.com/lsingh123/illogicalclocks/blob/main/plots/Trial%204/drift.png)
 
@@ -22,7 +22,7 @@ zero drift clock.
 represent internal events, red circles represent message sends, and blue circles represent message receives. Arrows connect sends to receives, and sends without
 an arrow weren't received at all. 
 
-* As an example, here's the Logical Space Time diagram for Trial 4:
+As an example, here's the Logical Space Time diagram for Trial 4:
 
 ![image](https://github.com/lsingh123/illogicalclocks/blob/main/plots/Trial%204/space_logicaltime.png)
 
@@ -31,7 +31,7 @@ is helpful to see the jump in logical time value. Arrows with steeper slopes ind
 clocks. The arrows on logical space time diagrams tend to have similar slope, where as system space time diagrams show some distortion in arrows depending 
 on differences in tick rate.
 
-* As an example, here's the System Space Time Diagram for Trial 4:
+As an example, here's the System Space Time Diagram for Trial 4:
 
 ![image](https://github.com/lsingh123/illogicalclocks/blob/main/plots/Trial%204/space_systemtime.png)
 
