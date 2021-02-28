@@ -11,7 +11,7 @@ The code that generated these plots is in `code/` `code/spacetime_plot.py` gener
 
 The first observation is that faster clocks, as in clocks with a higher tick rate, drift less from system time. The clock drift diagram below for Trial 1 demonstrates this fact. The blue line represents a clock with no drift from system time, and the dots represent logical vs system time for different VM's. 
 
-![image](https://github.com/lsingh123/illogicalclocks/blob/main/plots/Trial%201/drift.png&s=200)
+![image](https://github.com/lsingh123/illogicalclocks/blob/main/plots/Trial%201/drift.png?s=200)
 
 Notice that VM 1, represented by the green dots, drifts the least from system time, whereas VM 2, represented by blue dots drifts the most. VM 1's tick rate is four times that of VM 2, hence the difference in drift.
 
