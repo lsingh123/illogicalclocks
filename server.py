@@ -23,13 +23,15 @@ def receive(time):
 
 class VirtualMachine:
     
-    def __init__(self, testing=None, id=0):
+    def __init__(self, testing=None, id=0, speed_multiplier=1):
         self.id = id    # 0, 1, or 2
-        self.testing = testing # will hold the array of actions to be served in testing mode
+        self.testing = testing[1:] if testing else None # will hold the array of actions to be served in testing mode
         self.test_index = 0 # index into the testing array
         self.message_queue = queue.Queue()
         self.time = 0 # logical clock time
-        self.rate = randrange(1, 7) #* 10 # clock tick rate, self.rate events will occur in a single real second
+
+        # clock tick rate, self.rate events will occur in a single real second
+        self.rate = (testing[0] if testing else randrange(1, 7)) * speed_multiplier 
 
         # ID's of the other virtual machines this machine will talk to
         self.others = [0, 1, 2]
@@ -43,14 +45,20 @@ class VirtualMachine:
  
     # return a message from the message queue, or None if queue is empty
     def pop_message(self):
-        if self.testing:
-            self.test_index += 1
-            return self.testing[self.test_index-1]
-        else:
-            try:
-                return self.message_queue.get_nowait()
-            except queue.Empty:
-                return None
+        # if self.testing:
+        #     val = self.testing[self.test_index]
+        #     if val == 0:
+        #         ret = self.testing[self.test_index + 1]
+        #         self.test_index += 2
+        #     else:
+        #         ret = None 
+        #     self.test_index += 1
+        #     return self.testing[self.test_index - 1]
+        # else:
+        try:
+            return self.message_queue.get_nowait()
+        except queue.Empty:
+            return None
         
 
     # send a message to the target_id containing this machine's logical clock time
@@ -66,15 +74,20 @@ class VirtualMachine:
     # get the next action that this machine should perform 
     def get_action(self):
         if not self.testing:
-            return randrange(1, 10)
+            return randrange(1, 11)
         else:
             self.test_index += 1
-            return self.testing[self.test_index - 1]
+            try:
+                return self.testing[self.test_index - 1]
+            except IndexError:
+                # When testing and the VM has exhausted all actions, kill the VM (but keep server open)
+                sys.exit()
 
     def run_machine(self):
         self.run_server()
-        filename = f"{self.id}.txt"
         start_time = time.time()
+        filename = f"{self.id}test.txt" if self.testing else f"{self.id}.txt"
+
         try:
             os.remove(filename)
         except OSError:
@@ -89,7 +102,16 @@ class VirtualMachine:
             # sleep for 60/r
             sleep(60/self.rate)
 
-            action = self.get_action()
+            if self.testing:
+                
+                while True:
+                    if not self.test_index < len(self.testing):
+                        break
+                    current_val = self.testing[self.test_index]
+                    if not current_val == 0:
+                        break
+                    self.message_queue.put(self.testing[self.test_index + 1])
+                    self.test_index += 2
 
             event = None
             target1, target2 = -1, -1
@@ -98,9 +120,8 @@ class VirtualMachine:
                 time_received = int(message)
                 self.time = max(self.time, time_received) + 1
                 event = "received"
-
             else:
-
+                action = self.get_action()
                 self.time += 1
                 if action in {1, 2}:
                     recipient = self.others[action - 1]
@@ -123,14 +144,39 @@ class VirtualMachine:
             with open(filename, "a+") as f:
                 writer = csv.writer(f, delimiter=",")
                 writer.writerow([event, self.id, target1, target2, self.time, q_length, int(time.time()-start_time)])
-                
 
+                
+import sys
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("-id", help="Machine Id", default='0')
+    parser.add_argument("-id", help="Machine Id", type=int, default=0)
+    parser.add_argument("-t", help=("Optional testing flag. If specified, takes in a file where the first row is a "
+                                    "list of ints where the first int is the clock rate, and the next ints are the "
+                                    "actions"), default=None)
+    parser.add_argument("-s", help="Clock speed multiplier", type=int, default=1)
+    
     args = parser.parse_args()
 
-    machine = VirtualMachine(id=int(args.id))
+    testargs = None
+    if args.t:
+        try:
+            f = open(args.t)
+        except IOError:
+            print("Unable to open testing file")
+            sys.exit()
+        testargs = [int(i) for i in f.readline().split(" ")]
+        f.close()
+
+
+    # Make sure testing input is valid.
+    if testargs:
+        assert 1 <= testargs[0] <= 6, "Invalid clock speed"
+        assert all([i >= 0 for i in testargs[1:]]), "Invalid action"
+    assert 0 <= args.id <= 9, "Machine ids must be a single digit number"
+    assert args.s > 0, "Speed multiplier cannot be negative"
+    assert 0 <= args.id <= 2, "Id must be in [0, 2]"
+
+    machine = VirtualMachine(id=args.id, testing=testargs, speed_multiplier=args.s)
     machine.run_machine()
 
 
