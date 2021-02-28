@@ -1,11 +1,19 @@
 import matplotlib.pyplot as plt
 import csv
-import matplotlib.lines as mlines
-import matplotlib.transforms as mtransforms
 
+'''
+This file generates clock drift graphs using 0.txt, 1.txt, and 2.txt as input data
+'''
+
+'''
+load_data: None -> int[][][] times, int[] rates
+reads in data from input files and produces a single array of logical and system time for each VM
+and a single array containing the clock tick rates for each VM
+'''
 def load_data():
 
     times = [[[], []], [[], []], [[], []]]
+    rates = [1, 1, 1]
     for i in range(3):
 
         with open(f"{i}.txt", "r") as f:
@@ -16,22 +24,28 @@ def load_data():
             row = next(reader)
             for k in range(len(row)):
                 headers.update({row[k]:k})
-             
+                         
             for row in reader:
                 times[i][1].append(int(row[headers["LOGICAL_TIME"]]))
                 times[i][0].append(int(row[headers["TIME"]]))
-    return times 
+                rates[i] = row[headers["RATE"]]
+    return times, rates
 
+'''
+make_plot(): None -> None
+draw the plot
+'''
 def make_plot():
 
-    data = load_data()
+    data, rates = load_data()
     colors = ["red", "green", "blue"]
-    groups = ["VM 0", "VM 1", "VM 2"]
+    groups = [f"VM 0 ({rates[0]} t/s)", f"VM 1 ({rates[1]} t/s)", f"VM 2 ({rates[2]} t/s)"]
 
-    # Create plot
+    # create plot
     fig = plt.figure()
     ax = fig.add_subplot(111)
 
+    # add points
     for i in range(3):
         ax.scatter(data[i][0], data[i][1], c=colors[i], label=groups[i])
 

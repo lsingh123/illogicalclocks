@@ -95,7 +95,7 @@ class VirtualMachine:
 
         with open(filename, "w+") as f:
             writer = csv.writer(f, delimiter = ",")
-            writer.writerow(["EVENT", "ID", "TARGET1", "TARGET2", "LOGICAL_TIME", "QUEUE_LENGTH", "TIME"])
+            writer.writerow(["EVENT", "ID", "TARGET1", "TARGET2", "LOGICAL_TIME", "QUEUE_LENGTH", "TIME", "RATE"])
 
         while True:
                 
@@ -143,7 +143,7 @@ class VirtualMachine:
             q_length = self.message_queue.qsize()
             with open(filename, "a+") as f:
                 writer = csv.writer(f, delimiter=",")
-                writer.writerow([event, self.id, target1, target2, self.time, q_length, int(time.time()-start_time)])
+                writer.writerow([event, self.id, target1, target2, self.time, q_length, int(time.time()-start_time), self.rate])
 
                 
 import sys
