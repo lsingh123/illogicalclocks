@@ -21,8 +21,28 @@ def receive(time):
     machine.receive_message(time)
     return "hi"
 
+"""
+    A class that creates a virtual machine that sends and receives messages to other
+    virtual machines on different ports while keeping track of a logical clock.
+"""
 class VirtualMachine:
     
+    """
+        Initializes the virtual machine.
+
+        @param testing: None if the virtual machine is actually being run. Otherwise, holds
+            a list that determines the behavior of the machine. The first number is the
+            frequency of the machine. The other numbers determine the bahvior at each step.
+            If the number is 0, then the next number in the array will specify the logical
+            time that the machine receives at that point in excution. Otherwise, the number
+            represents an action from 1 to 10. 1 sends a message to one machine. 2 sends a 
+            message to the other machine, 3 sends a message to both, and 4-10 represents
+            an internal event. The events in the list are run sequentially.
+        @param id: The id number of the machine
+        @speed_multiplier: The multiplier applied to the frequency of the machine. Helpful
+            for testing purposes to simulate the machine running for a long time without
+            actually running it for that long.
+    """
     def __init__(self, testing=None, id=0, speed_multiplier=1):
         self.id = id    # 0, 1, or 2
         self.testing = testing[1:] if testing else None # will hold the array of actions to be served in testing mode
@@ -45,16 +65,6 @@ class VirtualMachine:
  
     # return a message from the message queue, or None if queue is empty
     def pop_message(self):
-        # if self.testing:
-        #     val = self.testing[self.test_index]
-        #     if val == 0:
-        #         ret = self.testing[self.test_index + 1]
-        #         self.test_index += 2
-        #     else:
-        #         ret = None 
-        #     self.test_index += 1
-        #     return self.testing[self.test_index - 1]
-        # else:
         try:
             return self.message_queue.get_nowait()
         except queue.Empty:
@@ -83,32 +93,36 @@ class VirtualMachine:
                 # When testing and the VM has exhausted all actions, kill the VM (but keep server open)
                 sys.exit()
 
+    # Simulates the run of the machine. All logic of how the machine operates is contained here.
     def run_machine(self):
+        # Start the server, record the time, define the file name
         self.run_server()
         start_time = time.time()
         filename = f"{self.id}test.txt" if self.testing else f"{self.id}.txt"
 
+        # Remove the file if it exists
         try:
             os.remove(filename)
         except OSError:
             pass
 
+        # Write the first row of the CSV
         with open(filename, "w+") as f:
             writer = csv.writer(f, delimiter = ",")
             writer.writerow(["EVENT", "ID", "TARGET1", "TARGET2", "LOGICAL_TIME", "QUEUE_LENGTH", "TIME", "RATE"])
 
         while True:
-                
             # sleep for 60/r
             sleep(60/self.rate)
 
+            # In testing mode, simulate receiving messages in the queue if the machine 
+            # should receive messages at this part of the deterministic run.
             if self.testing:
-                
                 while True:
                     if not self.test_index < len(self.testing):
                         break
                     current_val = self.testing[self.test_index]
-                    if not current_val == 0:
+                    if current_val != 0:
                         break
                     self.message_queue.put(self.testing[self.test_index + 1])
                     self.test_index += 2
@@ -117,18 +131,24 @@ class VirtualMachine:
             target1, target2 = -1, -1
             message = self.pop_message()
             if message:
+                # If a message was in the queue, update the logical clock time
+                # appropriately.
                 time_received = int(message)
                 self.time = max(self.time, time_received) + 1
                 event = "received"
             else:
+                # If no message was in the queue, randomly select an action
                 action = self.get_action()
                 self.time += 1
+
+                # Send message to one other machine
                 if action in {1, 2}:
                     recipient = self.others[action - 1]
                     self.send_message(recipient)
                     event = "send"
                     target1 = recipient
 
+                # Send messages to both machines
                 elif action == 3:    # control group
                 # elif action > 2 and action < 6:    # trials 6-7
                 # elif action > 2 and action < 8:    # trials 8-9
@@ -142,6 +162,7 @@ class VirtualMachine:
                 else:
                     event = "internal"
 
+            # Log the event and the queue size.
             q_length = self.message_queue.qsize()
             with open(filename, "a+") as f:
                 writer = csv.writer(f, delimiter=",")
@@ -150,6 +171,8 @@ class VirtualMachine:
                 
 import sys
 if __name__ == '__main__':
+    # Add command line argument for machine ID, testing mode, and speed multiplier.
+    # (See VM documentation on the __init__ method for more details.)
     parser = argparse.ArgumentParser()
     parser.add_argument("-id", help="Machine Id", type=int, default=0)
     parser.add_argument("-t", help=("Optional testing flag. If specified, takes in a file where the first row is a "
@@ -166,15 +189,18 @@ if __name__ == '__main__':
         except IOError:
             print("Unable to open testing file")
             sys.exit()
+        # The testing array, if used, will be on the first line of the specified testing file.
         testargs = [int(i) for i in f.readline().split(" ")]
         f.close()
 
 
     # Make sure testing input is valid.
     if testargs:
+        # All clock speeds must be between 1 and 6, actions must be >= to 0
         assert 1 <= testargs[0] <= 6, "Invalid clock speed"
         assert all([i >= 0 for i in testargs[1:]]), "Invalid action"
-    assert 0 <= args.id <= 9, "Machine ids must be a single digit number"
+    
+    # ID must be 0, 1, or 2, and speed multiplier must be positive
     assert args.s > 0, "Speed multiplier cannot be negative"
     assert 0 <= args.id <= 2, "Id must be in [0, 2]"
 
