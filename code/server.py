@@ -30,7 +30,7 @@ class VirtualMachine:
     """
         Initializes the virtual machine.
 
-        @param testing: None if the virtual machine is actually being run. Otherwise, holds
+        @param int list | None testing: None if the virtual machine is actually being run. Otherwise, holds
             a list that determines the behavior of the machine. The first number is the
             frequency of the machine. The other numbers determine the bahvior at each step.
             If the number is 0, then the next number in the array will specify the logical
@@ -38,8 +38,10 @@ class VirtualMachine:
             represents an action from 1 to 10. 1 sends a message to one machine. 2 sends a 
             message to the other machine, 3 sends a message to both, and 4-10 represents
             an internal event. The events in the list are run sequentially.
-        @param id: The id number of the machine
-        @speed_multiplier: The multiplier applied to the frequency of the machine. Helpful
+
+        @param int id: The id number of the machine
+        
+        @param int | float speed_multiplier: The multiplier applied to the frequency of the machine. Helpful
             for testing purposes to simulate the machine running for a long time without
             actually running it for that long.
     """
