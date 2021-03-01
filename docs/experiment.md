@@ -99,18 +99,42 @@ evidenced by VM 2 dominating Trial 8's space time diagram. This makes sense beca
 send a bunch of messages to the others instead of performing internal events.
 
 Trial 8 in particular had a really high probability of multisends, so messages sent simultaneously to both of the other VMs. This explains why, in the Trial 8
-diagram, VM 1 and VM 0 appear to receive messages at a similar rate. This is clearest when looking at the space system time diagram for Trial 8:
+diagram, VM 1 and VM 0 appear to receive messages at a similar logical clock rate. Note that VM 1 stops receiving messages sooner because its tick rate is 
+slower, so system time runs out sooner for it. This is clearest when looking at the space system time diagram for Trial 8:
 
 ![image](https://github.com/lsingh123/illogicalclocks/blob/main/plots/Trial%208/space_systemtime.png)
 
 
-### Observation 4: Variance in Clock Tick Rate == Higher Jumps in Logical Clock Times
+### Observation 4: Variance in Clock Tick Rate => Jumps in Logical Clock Times
 
-Trial 1 space time diagram for logicaltime vs systemtime vs Trial 2
+Trials 1 and 2 have the same probability of internal events (7/10) but Trial 1 machines exhibit variance across tick rate (4 ticks/second, 2 ticks/second, 1
+tick/second) where as all three Trial 2 machines have the same tick rate (1 tick/second). 
 
-### Observation 5: Same Clock tick rate == Same Drift
+Here is the space logical time diagram for Trial 1:
 
-The boring trial 2. 
+![image](https://github.com/lsingh123/illogicalclocks/blob/main/plots/Trial%201/space_logicaltime.png)
+
+And for Trial 2:
+
+![image](https://github.com/lsingh123/illogicalclocks/blob/main/plots/Trial%202/space_logicaltime.png)
+
+There are far fewer events in Trial 2 because of the slower tick rate. Because all three clocks have the same tick rate, notice that the jumps in logical time
+value, as indicated by space between event circles, are the same. For Trial 1, VM 1 and VM 2 display far bigger jumps in logical clock value because they are 
+slower than VM 4. The average size of logical time jump appears to the same for each Trial, but Trial 1 exhibits more variance in logical clock jumps because 
+of the varying tick rates across machines. In Trial 1, the slow VM 2 in Trial 1 processes messages that the fast VM 1 sent far far in the future. In Trial 2, 
+all machines send and process at the same rate.
+
+### Observation 5: Same Clock Rate => Same Drift
+
+In Trial 2, all VMs had the slow tick rate of 1 tick/second. The drift diagram for Trial 2 is below:
+
+![image](https://github.com/lsingh123/illogicalclocks/blob/main/plots/Trial%202/drift.png)
+
+Notice that the drift rates are all the same! Each VM processes exactly 4 events and these are all processed at the same system time. Machines with the exact 
+same tick rate have the exact samr drift amount and frequency of logical clock update. This observation supports the running theme that properties we care about
+in a distributed system, like logical time jumps and clock drift, depend on *relative* tick rates, not absolute tick rates. Higher variance in tick rates leads 
+to undesirable properties like logical time jumps and clock drift.
+
 
 ### Observation 6: Slower clocks have higher jumps in logical clock value
 
