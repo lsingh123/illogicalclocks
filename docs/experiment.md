@@ -136,11 +136,32 @@ in a distributed system, like logical time jumps and clock drift, depend on *rel
 to undesirable properties like logical time jumps and clock drift.
 
 
-### Observation 6: Slower clocks have higher jumps in logical clock value
+### Observation 6: Slower Machines Jump More and Have Larger Message Delays
 
-Trial 4 space time diagrams 
+Trial 4 showed us that VMs with slower tick rates display larger jumps in logical time values. Consider the space logical time diagram below:
 
+![image](https://github.com/lsingh123/illogicalclocks/blob/main/plots/Trial%204/space_logicaltime.png)
 
+VM 2 and VM 0 have similar tick rates (6 ticks/second and 5 ticks/second) and VM 1 has a far slower tick rate (1 tick/second). The slower machine has far 
+greater jumps in logical clock value, as demonstrated by the distance between events for VM 1. 
+
+Additionally, consider the system space time diagram below:
+
+![image](https://github.com/lsingh123/illogicalclocks/blob/main/plots/Trial%204/space_systemtime.png)
+
+The slope of the arrows denotes the delay between message send and receipt. Notice that messages sent between VM 0 and VM 2, who have similar tick rates have
+arrows with steeper slope, and thus less delay between message send and receipt. On the other hand, VM 1 exhibits large delays when receiving from VM 0 and VM 
+2 because it is slow. The logical space time diagram obscures this detail because logical time is generally lower and less fine-grained (since we only have a 
+few events per second). Details like slopes are exaggerated in system time diagrams.
+
+## Conclusions
+
+There are a few properties that might be useful in a distributed system, and this experiment revealed how clock tick rates affect them. First, jumps in 
+logical clock values, also known as jumping forward in time, might be considered undesirable. These are caused by variances in clock tick rates. When talking 
+to a faster VM, the slower machine sees larger jumps in logical clock values. Second, clock drift is generally considered problematic. Clock drift from "real" 
+or system time occurs more in slower VM's, but all time is relative, especially in a distributed system. In the absence of God's eye views of time, relative 
+clock drift is most important, and this can be avoided by machines that tick at similar rates. Third, long message queues prevent machines from doing tasks 
+other than message processing. Slow machines talking to fast machines tend to suffer from long message queues. 
 
 
 
