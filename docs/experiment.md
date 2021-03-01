@@ -52,13 +52,57 @@ This implies that if components in a distributed system must be synchronized wit
 as close as possible to the "real" clock tick rate. Note that for the purposes of our experiment, a higher tick rate also meant more 
 data points to plot and analyze, which produced some cleaner looking lines on the scatterplot. If we ran our trials for far longer, maybe 30 minutes, then the noise should fade away and all three VM's, regardless of tick rate, should achieve similarly clean lines.
 
-### Observation 2: Receivers are Receivers/ Message Queue Length
+### Observation 2: Receivers Stay Receivers
 
-In Trial 9, VM sends a bunch and the other guys get clogged and can't send anymore -> mention connection between clock speed and length of the message queue
+Consider the following space-time diagram for Trial 9. 
 
-### Observation 3: Higher probability of message send
+![image](https://github.com/lsingh123/illogicalclocks/blob/main/plots/Trial%209/space_logicaltime.png)
 
-Trial 1 and Trial 8 have same tick rates but diff probabilities of message send
+The probability of message sends is quite high (7/10) for all VM's, but VM 0 has a tick rate of 5 ticks/second, whereas VMs 1 and 2 have tick rates of 1 
+tick/second. VM 0 sends a bunch of messages over really quickly, so VM1's and VM0's message queues become very long. Because their message queues are very 
+long, they are stuck simply receiving messages, so VM0 never receives anything, so it keeps sending more messages and the cycle continues. 
+
+In particular, VM's with a faster tick rate have shorter message queues because they can process messages more quickly, and because they can make more sends
+before the others have the chance to send a single message out. VM's with slower tick rates have longer message queues because they are slow to process 
+messages and become inundated quickly. Thhis observation is supported by comparing the diagram above, which uses logical time, to the diagram below, which uses
+system time. VM 2 and VM 1 appear to be idle in the diagram above because such few events happen, but the diagram below demonstrates that these events are 
+distributed quite sparsely across system time because the tick rates are so slow.
+
+![image](https://github.com/lsingh123/illogicalclocks/blob/main/plots/Trial%209/space_systemtime.png)
+
+### Observation 3: Changing Probability of Message Send
+
+Trials 1 and 8 have three machines with the same tick rates (1 tick/second, 2 ticks/second, 4 ticks/second), but Trial 8 has a far higher (7/10 compared to
+3/10) probability of an event being a message send instead of an internal event. Below is the clock drift graph for Trial 1:
+
+![image](https://github.com/lsingh123/illogicalclocks/blob/main/plots/Trial%201/drift.png)
+
+And for Trial 8:
+
+![image](https://github.com/lsingh123/illogicalclocks/blob/main/plots/Trial%208/drift.png)
+
+Notice that the drift rates appear to be similar for both trials, but Trial 8 has far cleaner lines because there are more datapoints because there are more 
+logged events because there are more messages being exchanged. VM 0 (red) in Trial 1 (first graph) appears to have far less drift than expected, but this could
+also be due to noise since VM 0 has logged fairly few events. 
+
+Also compare the spacetime diagram for Trial 1:
+
+![image](https://github.com/lsingh123/illogicalclocks/blob/main/plots/Trial%201/space_logicaltime.png)
+
+And for Trial 8:
+
+![image](https://github.com/lsingh123/illogicalclocks/blob/main/plots/Trial%208/space_logicaltime.png)
+
+In Observation 2, we claimed that machines with faster tick rates will inundate the others with messages and the others will get stuck with long message queues,
+just processing messages. This property appears to be far stronger with a higher probability of an event being a message send (Trial 8, second graph), as 
+evidenced by VM 2 dominating Trial 8's space time diagram. This makes sense because there is a higher probability that Trial 8 uses its faster tick rate to 
+send a bunch of messages to the others instead of performing internal events.
+
+Trial 8 in particular had a really high probability of multisends, so messages sent simultaneously to both of the other VMs. This explains why, in the Trial 8
+diagram, VM 1 and VM 0 appear to receive messages at a similar rate. This is clearest when looking at the space system time diagram for Trial 8:
+
+![image](https://github.com/lsingh123/illogicalclocks/blob/main/plots/Trial%208/space_systemtime.png)
+
 
 ### Observation 4: Variance in Clock Tick Rate == Higher Jumps in Logical Clock Times
 
