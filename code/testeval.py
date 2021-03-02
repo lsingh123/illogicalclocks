@@ -2,6 +2,18 @@ import argparse
 import csv
 import sys
 
+'''
+This file compares test output to expected output.
+'''
+
+''' read in values from a specific row in the CSV
+@param: string f 
+        file name 
+@param: bool is_int  
+        true if the data type is int
+@param: int column
+        column index to be read
+'''      
 def extract_vals(f, is_int, column):
     valsreader = csv.reader(f, delimiter=',')
     vals = []
@@ -20,13 +32,14 @@ def main():
     expectation_filename = args.expected
 
 
-    
+    # read the values
     csv_file = open(csv_filename)
     real_vals = extract_vals(csv_file, True, 4)
     csv_file.seek(0)
     real_actions = extract_vals(csv_file, False, 0)
     csv_file.close()
 
+    # compare expected and actual values
     expectation_file = open(expectation_filename)
     _ = expectation_file.readline()
     expected_vals = [int(i) for i in expectation_file.readline().split(" ")]
